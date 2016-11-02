@@ -111,8 +111,16 @@ contains(_Ctx,[Where, What]) ->
 %%      specified in the third argument
 substring(_Ctx,[<<>>,_Start,_Length]) -> <<>>;
 substring(_Ctx,[String,Start,Length]) when is_binary(String)->
-    Before = Start - 1,
+
     Size = size(String),
+
+    case Start < 1 of
+        false ->
+            Before = Start - 1;
+        true ->
+            Before = Size + Start
+    end,
+
     Max = Size - Before,
     case (Start + Length) =< size(String) + 1 of
         true ->

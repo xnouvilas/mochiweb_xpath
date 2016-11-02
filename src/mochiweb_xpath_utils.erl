@@ -1,5 +1,5 @@
 %% xpath_utils.erl
-%% @author Pablo Polvorin 
+%% @author Pablo Polvorin
 %% @doc Utility functions, mainly for type conversion
 %%      Conversion rules taken from http://www.w3.org/TR/1999/REC-xpath-19991116
 %% created on 2008-05-07
@@ -55,9 +55,10 @@ number_value(N) when is_binary(N)->
     String = binary_to_list(N),
     case erl_scan:string(String) of
         {ok, [{integer,1,I}],1} -> I;
+        {ok, [{'-',1}, {integer,1,I}],1} -> 0 - I;
         {ok, [{float,1,F}],1} -> F
     end;
-    
+
 number_value(N) ->
     number_value(string_value(N)).
 
