@@ -126,9 +126,6 @@ between(_Ctx,[What,Low,High]) ->
         false ->
             {Number, _} = string:to_integer(binary_to_list(What))
     end,
-
-    erlang:display(What),
-    erlang:display(Number),
     (Number >= Low) and (Number =< High).
 
 %% @doc Function: string substring(string, number, number?)
