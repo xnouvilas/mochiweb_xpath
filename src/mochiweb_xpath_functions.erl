@@ -28,6 +28,8 @@ lookup_function('count') ->
     {'count',fun count/2,[node_set]};
 lookup_function('concat') ->
     {'concat',fun concat/2,[{'*', string}]};
+lookup_function('concat-list') ->
+    {'concat-list',fun 'concat-list'/2,[string,node_set,string]};
 lookup_function('name') ->
     {'name',fun 'name'/2,[node_set]};
 lookup_function('starts-with') ->
@@ -36,6 +38,8 @@ lookup_function('ends-with') ->
     {'ends-with', fun 'ends-with'/2,[string,string]};
 lookup_function('contains') ->
     {'contains', fun 'contains'/2,[string,string]};
+lookup_function('between') ->
+    {'between', fun 'between'/2,[string,number,number]};
 lookup_function('substring') ->
     {'substring', fun substring/2,[string,number,number]};
 lookup_function('sum') ->
@@ -71,6 +75,15 @@ concat(_Ctx, BinariesList) ->
     %% list_to_binary()
     << <<Str/binary>> || Str <- BinariesList>>.
 
+%% @doc Function: concat(binary, NodeList, binary)
+%%      Concatenate prefixes and suffixes to string
+% 'concat-list'(_Ctx, [Prefix,NodeList]) when is_list(NodeList) ->
+%     lists:map(fun(Node) -> <<Prefix/binary,Node/binary>> end, NodeList);
+% 'concat-list'(_Ctx, [NodeList,Suffix]) when is_list(NodeList) ->
+%     lists:map(fun(Node) -> <<Node/binary,Suffix/binary>> end, NodeList);
+'concat-list'(_Ctx, [Prefix,NodeList,Suffix]) ->
+    lists:map(fun(Node) -> <<Prefix/binary,Node/binary,Suffix/binary>> end, NodeList).
+
 %% @doc Function: string name(node-set?)
 'name'(_Ctx,[[{Tag,_,_,_}|_]]) ->
     Tag.
@@ -104,6 +117,19 @@ contains(_Ctx,[Where, What]) ->
         {_, _} ->
             true
     end.
+
+%% @doc Function: checks that Where is between two integers
+between(_Ctx,[What,Low,High]) ->
+    case is_integer(What) of
+        true ->
+            Number = What;
+        false ->
+            {Number, _} = string:to_integer(binary_to_list(What))
+    end,
+
+    erlang:display(What),
+    erlang:display(Number),
+    (Number >= Low) and (Number =< High).
 
 %% @doc Function: string substring(string, number, number?)
 %%      The substring function returns the substring of the first argument
