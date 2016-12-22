@@ -50,6 +50,8 @@ lookup_function('not') ->
     {'not', fun x_not/2, [boolean]};
 lookup_function('string') ->
     {'string', fun 'string'/2, [node_set]};
+lookup_function('string-list') ->
+    {'string-list', fun 'string-list'/2, [node_set]};
 lookup_function(_) ->
     false.
 
@@ -187,6 +189,16 @@ concat_child_text([{_,_,Children,_} | Rest], Result) ->
     concat_child_text(Rest, [concat_child_text(Children, []) | Result]);
 concat_child_text([X | Rest], Result) ->
     concat_child_text(Rest, [X | Result]).
+
+'string-list'(_Ctx, [NodeList]) ->
+    lists:map(fun({_Elem, _Attr, Children,_Pos}) -> list_child_text(Children, []) end, NodeList).
+
+list_child_text([], Result) ->
+    lists:reverse(Result);
+list_child_text([{_,_,Children,_} | Rest], Result) ->
+    list_child_text(Rest, [list_child_text(Children, []) | Result]);
+list_child_text([X | Rest], Result) ->
+    list_child_text(Rest, [X | Result]).
 
 x_not(_Ctx, [Bool]) ->
     not Bool.
