@@ -44,6 +44,8 @@ lookup_function('substring') ->
     {'substring', fun substring/2,[string,number,number]};
 lookup_function('replace') ->
     {'replace', fun replace/2,[string,string,string]};
+lookup_function('replace-list') ->
+    {'replace-list', fun 'replace-list'/2,[node_set,string,string]};
 lookup_function('sum') ->
     {'sum', fun sum/2,[node_set]};
 lookup_function('string-length') ->
@@ -80,11 +82,7 @@ concat(_Ctx, BinariesList) ->
     << <<Str/binary>> || Str <- BinariesList>>.
 
 %% @doc Function: concat(binary, NodeList, binary)
-%%      Concatenate prefixes and suffixes to string
-% 'concat-list'(_Ctx, [Prefix,NodeList]) when is_list(NodeList) ->
-%     lists:map(fun(Node) -> <<Prefix/binary,Node/binary>> end, NodeList);
-% 'concat-list'(_Ctx, [NodeList,Suffix]) when is_list(NodeList) ->
-%     lists:map(fun(Node) -> <<Node/binary,Suffix/binary>> end, NodeList);
+%%      Concatenate prefixes and suffixes to string for each entry in list
 'concat-list'(_Ctx, [Prefix,NodeList,Suffix]) ->
     lists:map(fun(Node) -> <<Prefix/binary,Node/binary,Suffix/binary>> end, NodeList).
 
@@ -161,9 +159,17 @@ substring(_Ctx,[String,Start,Length]) when is_binary(String)->
     end.
 
 
-%% @doc Function: Replaces needle in haystack with replace
-replace(_Ctx,[Haystack, Needle, Replace]) ->
+%% @doc Function: replace(binary, binary, binary)
+%%      Replaces needle in haystack with replace
+replace(_Ctx,[Haystack,Needle,Replace]) ->
     binary:replace(Haystack,Needle,Replace).
+
+
+%% @doc Function: replace-list(NodeList, binary, binary)
+%%      Replace needle in haystack with replace for each entry in list
+'replace-list'(_Ctx, [NodeList,Needle,Replace]) ->
+    lists:map(fun(Haystack) -> binary:replace(Haystack,Needle,Replace) end, NodeList).
+
 
 %% @doc Function: number sum(node-set)
 %%      The sum function returns the sum, for each node in the argument
