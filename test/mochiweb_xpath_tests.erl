@@ -1,10 +1,10 @@
 %% coding: utf-8
-%% 
-%% @author Pablo Polvorin 
+%%
+%% @author Pablo Polvorin
 %% @author Hunter Kelly.
 %% created on 2008-04-30
 %% Converted to eunit on 2011-07-04
-%% 
+%%
 %% Some simple functional test cases, test the xpath implementation
 -module(mochiweb_xpath_tests).
 
@@ -23,7 +23,7 @@
 %% [{HtmlFileName,Cases}]
 %% Cases = {XPath,ExpectedResult}
 test_definitions() ->
-    [ 
+    [
       {?HTML1,[
                {"/html/head/title/text()",[<<"Title">>]},
                {"/html/head/meta[2]/@content",[<<"text/html; charset=utf-8">>]},
@@ -55,6 +55,8 @@ test_definitions() ->
                {"/html/body/div/img[contains(@src, 'broken')]/@src",[<<"some_broken_img_tag">>]},
                %% test "concat()"
                {"concat(//div[@id='last']/@class, 'txt1', 2)",<<"normaltxt12">>},
+               %% test "concat-list()"
+               {"concat-list('p-', //ul[1]/li/text(), '-s')",[<<"p-List item-s">>, <<"p-list item2-s">>]},
                %% rest "not()"
                {"not(1=2)", true},
                {"not(1=1)", false},
@@ -79,6 +81,10 @@ test_definitions() ->
                %% {"/html/body/processing-instruction()", [{pi,<<"php my_processing_instr() ">>}]},  % processing-instriction() not work on my R14B04, but fixed in bffc6b40 Xmerl 1.3
                {"/html/body/processing-instruction('php')", [{pi,<<"php my_processing_instr() ">>}]},  % processing-instriction()
                {"/html/body/processing-instruction('erl')", []},  % processing-instriction()
+               %%  replace
+               {"replace(//h1/text(), '!!', '!')", <<"Some Title!">>},
+               %%  replace list
+               {"replace-list(replace-list(//ul[1]/li/text(), 'list', 'List'), '2', '')", [<<"List item">>, <<"List item">>]},
                %% == axes ==
                %% -- descendant --
                {"count(/html/body/ul/descendant::*)", 4},
@@ -148,12 +154,12 @@ test_definitions() ->
                {"//div[sum(number)=23]/@id",[<<"sum">>]},
                {"//div[sum(number)>20]/@id",[<<"sum">>]},
                {"string-length(name(/html)) = 4",true},
-               {"//a[my_fun(@href) > 0]/text()", 
+               {"//a[my_fun(@href) > 0]/text()",
                 [<<"ssddd">>,<<"myURLValue">>]},
                {"/html/body/div[1]/a[1]",
                 [{<<"a">>,[{<<"href">>,<<"sss">>}],[<<"ssddd">>]}]},
-               {"/html/body/div[1]/a[position() < 3]", 
-                [{<<"a">>,[{<<"href">>,<<"sss">>}],[<<"ssddd">>]}, 
+               {"/html/body/div[1]/a[position() < 3]",
+                [{<<"a">>,[{<<"href">>,<<"sss">>}],[<<"ssddd">>]},
                  {<<"a">>, [{<<"href">>,<<"sssd">>}], [<<"sfgfe">>]}]},
                %% XPath expressions in arithmetic operations
                {"sum(//div[@id='second']/div/number)", 23},
@@ -209,9 +215,9 @@ do_test({File,Cases},UserFunctions) ->
 
 %% assert(Expr,Result,Expected) ->
 %%    case Result == Expected of
-%%         true -> 
+%%         true ->
 %%             io:format("pass: ~s~n",[Expr]);
-%%         false -> 
+%%         false ->
 %%             io:format("*fail*: ~s : ~n* Result:~p Expected:~p~n",
 %%                         [Expr,Result,Expected])
 %%     end.
