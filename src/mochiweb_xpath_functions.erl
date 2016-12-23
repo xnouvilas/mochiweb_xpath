@@ -42,6 +42,8 @@ lookup_function('between') ->
     {'between', fun 'between'/2,[string,number,number]};
 lookup_function('substring') ->
     {'substring', fun substring/2,[string,number,number]};
+lookup_function('replace') ->
+    {'replace', fun replace/2,[string,string,string]};
 lookup_function('sum') ->
     {'sum', fun sum/2,[node_set]};
 lookup_function('string-length') ->
@@ -157,6 +159,11 @@ substring(_Ctx,[String,Start,Length]) when is_binary(String)->
             <<_:Before/binary,R:Max/binary,_:After/binary>> = String,
             R
     end.
+
+
+%% @doc Function: Replaces needle in haystack with replace
+replace(_Ctx,[Haystack, Needle, Replace]) ->
+    binary:replace(Haystack,Needle,Replace).
 
 %% @doc Function: number sum(node-set)
 %%      The sum function returns the sum, for each node in the argument
