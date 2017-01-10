@@ -52,12 +52,18 @@ lookup_function('sum') ->
     {'sum', fun sum/2,[node_set]};
 lookup_function('string-length') ->
     {'string-length', fun 'string-length'/2,[string]};
-lookup_function('not') ->
-    {'not', fun x_not/2, [boolean]};
+
+lookup_function('split') ->
+    {'split', fun split/2,[string,string]};
+lookup_function('join') ->
+    {'join', fun join/2,[node_set,string]};
+
 lookup_function('string') ->
     {'string', fun 'string'/2, [node_set]};
 lookup_function('string-list') ->
     {'string-list', fun 'string-list'/2, [node_set]};
+lookup_function('not') ->
+    {'not', fun x_not/2, [boolean]};
 lookup_function(_) ->
     false.
 
@@ -193,6 +199,16 @@ sum(_Ctx,[Values]) ->
 %%            in the string, that isn't the same
 'string-length'(_Ctx,[String]) ->
     size(String).
+
+%% @doc Function: node-set split(string, string)
+%%      Split a string into nodes
+split(_Ctx,[String,Separator]) ->
+    string:tokens(String,Separator).
+
+%% @doc Function: string join(node-set, string)
+%%      Split a string into nodes
+join(_Ctx,[NodeList,Glue]) ->
+    string:join(NodeList,Glue).
 
 %%  @doc Function: string string(node_set)
 %%
