@@ -42,6 +42,8 @@ lookup_function('between') ->
     {'between', fun 'between'/2,[string,number,number]};
 lookup_function('substring') ->
     {'substring', fun substring/2,[string,number,number]};
+lookup_function('substring-list') ->
+    {'substring-list', fun 'substring-list'/2,[node_set,number,number]};
 lookup_function('replace') ->
     {'replace', fun replace/2,[string,string,string]};
 lookup_function('replace-list') ->
@@ -157,6 +159,13 @@ substring(_Ctx,[String,Start,Length]) when is_binary(String)->
             <<_:Before/binary,R:Max/binary,_:After/binary>> = String,
             R
     end.
+
+%% @doc Function: string substring-list(node-set, number, number?)
+%%      The substring function returns the substring of the first argument
+%%      starting at the position specified in the second argument with length
+%%      specified in the third argument for every node in list
+'substring-list'(Ctx,[NodeList,Start,Length]) ->
+    lists:map(fun(Node) -> substring(Ctx,[Node,Start,Length]) end, NodeList).
 
 
 %% @doc Function: replace(binary, binary, binary)
