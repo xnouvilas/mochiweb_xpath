@@ -57,6 +57,8 @@ lookup_function('split') ->
     {'split', fun split/2,[string,string]};
 lookup_function('join') ->
     {'join', fun join/2,[node_set,string]};
+lookup_function('take') ->
+    {'take', fun take/2,[node_set,number]};
 
 lookup_function('string') ->
     {'string', fun 'string'/2, [node_set]};
@@ -212,6 +214,18 @@ split(_Ctx,[String,Separator]) ->
 join(_Ctx,[NodeList,Glue]) ->
     StringList = lists:map(fun(Node) -> binary_to_list(Node) end, NodeList),
     list_to_binary(string:join(StringList,binary_to_list(Glue))).
+
+%% @doc Function: node-set take(node-set, number)
+%%      Split a string into nodes
+take(_Ctx,[NodeList,Index]) ->
+    ListSize = length(NodeList),
+    case ListSize < Index of
+        true ->
+            ListIndex = ListSize;
+        false ->
+            ListIndex = Index
+    end,
+    lists:nth(ListIndex, NodeList).
 
 %%  @doc Function: string string(node_set)
 %%
