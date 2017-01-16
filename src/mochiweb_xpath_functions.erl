@@ -203,12 +203,14 @@ sum(_Ctx,[Values]) ->
 %% @doc Function: node-set split(string, string)
 %%      Split a string into nodes
 split(_Ctx,[String,Separator]) ->
-    string:tokens(String,Separator).
+    NodeList = string:tokens(binary_to_list(String),binary_to_list(Separator)),
+    lists:map(fun(Node) -> list_to_binary(Node) end, NodeList).
 
 %% @doc Function: string join(node-set, string)
 %%      Split a string into nodes
 join(_Ctx,[NodeList,Glue]) ->
-    string:join(NodeList,Glue).
+    StringList = lists:map(fun(Node) -> binary_to_list(Node) end, NodeList),
+    list_to_binary(string:join(StringList,binary_to_list(Glue))).
 
 %%  @doc Function: string string(node_set)
 %%
