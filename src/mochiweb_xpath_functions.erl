@@ -202,6 +202,7 @@ sum(_Ctx,[Values]) ->
 
 %% @doc Function: node-set split(string, string)
 %%      Split a string into nodes
+split(_Ctx,[<<>>,Separator]) -> [];
 split(_Ctx,[String,Separator]) ->
     NodeList = string:tokens(binary_to_list(String),binary_to_list(Separator)),
     lists:map(fun(Node) -> list_to_binary(Node) end, NodeList).
