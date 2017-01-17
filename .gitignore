@@ -3,3 +3,7 @@ deps/
 .eunit/
 ebin/*app
 .dialyzer_plt
+.fetch
+.rebar/*
+.rebar3/*
+
