@@ -53,6 +53,13 @@ lookup_function('sum') ->
 lookup_function('string-length') ->
     {'string-length', fun 'string-length'/2,[string]};
 
+lookup_function('regex-match') ->
+    {'regex-match', fun 'regex-match'/2,[string,string]};
+lookup_function('regex-replace') ->
+    {'regex-replace', fun 'regex-replace'/2,[string,string,string]};
+lookup_function('regex-replace-list') ->
+    {'regex-replace-list', fun 'regex-replace-list'/2,[node_set,string,string]};
+
 lookup_function('split') ->
     {'split', fun split/2,[string,string]};
 lookup_function('join') ->
@@ -201,6 +208,31 @@ sum(_Ctx,[Values]) ->
 %%            in the string, that isn't the same
 'string-length'(_Ctx,[String]) ->
     size(String).
+
+%% @doc Function: regex-match split(string, string, string)
+%%      Replace string content by regular expression
+'regex-match'(_Ctx,[<<>>,_Match]) -> [];
+'regex-match'(_Ctx,[String,Match]) ->
+    case re:run(String, Match, [global, {capture, all, binary}]) of
+        {match,Results} ->
+            Results;
+        nomatch ->
+            Results = []
+    end,
+    lists:flatten(Results).
+
+%% @doc Function: regex-replace split(string, string)
+%%      Replace contents of a string by regular expression
+'regex-replace'(_Ctx,[<<>>,_Match,_Replace]) -> <<>>;
+'regex-replace'(_Ctx,[String,Match,Replace]) ->
+    re:replace(String, Match, Replace, [global, {return, list}]).
+
+
+%% @doc Function: regex-replace-list split(string, string, string)
+%%      Replace string content by regular expression for every entry in list
+'regex-replace-list'(_Ctx,[[],_Match,_Replace]) -> [];
+'regex-replace-list'(Ctx,[NodeList,Match,Replace]) when is_list(NodeList) ->
+    lists:map(fun(Node) -> 'regex-replace'(Ctx,[Node,Match,Replace]) end, NodeList).
 
 %% @doc Function: node-set split(string, string)
 %%      Split a string into nodes
