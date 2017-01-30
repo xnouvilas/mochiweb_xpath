@@ -66,6 +66,8 @@ lookup_function('join') ->
     {'join', fun join/2,[node_set,string]};
 lookup_function('take') ->
     {'take', fun take/2,[node_set,number]};
+lookup_function('take-each') ->
+    {'take-each', fun 'take-each'/2,[node_set,number]};
 
 lookup_function('string') ->
     {'string', fun 'string'/2, [node_set]};
@@ -248,15 +250,23 @@ join(_Ctx,[NodeList,Glue]) ->
 
 %% @doc Function: node-set take(node-set, number)
 %%      Split a string into nodes
+take(_Ctx,[NodeList,-1]) ->
+    ListSize = length(NodeList),
+    lists:nth(ListSize, NodeList);
+take(_Ctx,[NodeList,0]) ->
+    lists:nth(1, NodeList);
 take(_Ctx,[NodeList,Index]) ->
     ListSize = length(NodeList),
-    case ListSize < Index of
+    case Index =< ListSize of
         true ->
-            ListIndex = ListSize;
+            lists:nth(Index, NodeList);
         false ->
-            ListIndex = Index
-    end,
-    lists:nth(ListIndex, NodeList).
+            <<>>
+    end.
+
+
+'take-each'(Ctx,[NodeList,Index]) ->
+    lists:map(fun(Node) -> take(Ctx,[Node,Index]) end, NodeList).
 
 %%  @doc Function: string string(node_set)
 %%
