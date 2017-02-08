@@ -81,10 +81,16 @@ test_definitions() ->
                %% {"/html/body/processing-instruction()", [{pi,<<"php my_processing_instr() ">>}]},  % processing-instriction() not work on my R14B04, but fixed in bffc6b40 Xmerl 1.3
                {"/html/body/processing-instruction('php')", [{pi,<<"php my_processing_instr() ">>}]},  % processing-instriction()
                {"/html/body/processing-instruction('erl')", []},  % processing-instriction()
-               %%  replace
+               %% replace
                {"replace(//h1/text(), '!!', '!')", <<"Some Title!">>},
-               %%  replace list
-               {"replace-list(replace-list(//ul[1]/li/text(), 'list', 'List'), '2', '')", [<<"List item">>, <<"List item">>]},
+               %% replace list
+               {"replace-list(replace-list(//ul[1]/li/text(), 'list', 'List'), '2', '')",
+                 [<<"List item">>, <<"List item">>]},
+               %% string
+               {"string(//cite[2])", [<<"other stuff">>]},
+               %% string-list
+               {"string(//cite)",
+                 [<<"one-two-three-(nested-[deeply-four-done]-done)-five">>, <<"other stuff">>]},
                %% == axes ==
                %% -- descendant --
                {"count(/html/body/ul/descendant::*)", 4},
@@ -145,8 +151,10 @@ test_definitions() ->
                {"count(/html/body/form[count(input[@type='hidden']) = 4])",
                 1},
                {"name(/html/*)",<<"head">>},
+               %% starts with
                {"/html/body/form[starts-with(@action,'Act')]/@action",
                 [<<"Action1">>,<<"Action2">>]},
+               %% ends with
                {"/html/body/div[ends-with(@id,'t')]/@id",
                 [<<"first">>,<<"last">>]},
                {"//input[substring(@name,1,4) = 'id1_']/@value",
