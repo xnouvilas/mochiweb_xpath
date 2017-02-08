@@ -42,20 +42,39 @@ lookup_function('between') ->
     {'between', fun 'between'/2,[string,number,number]};
 lookup_function('substring') ->
     {'substring', fun substring/2,[string,number,number]};
+lookup_function('substring-list') ->
+    {'substring-list', fun 'substring-list'/2,[node_set,number,number]};
 lookup_function('translate') ->
-    {'translate', fun translate/2,[string,string,string]};
+    {'translate', fun replace/2,[string,string,string]};
 lookup_function('translate-list') ->
-    {'translate-list', fun 'translate-list'/2,[node_set,string,string]};
+    {'translate-list', fun 'replace-list'/2,[node_set,string,string]};
 lookup_function('sum') ->
     {'sum', fun sum/2,[node_set]};
 lookup_function('string-length') ->
     {'string-length', fun 'string-length'/2,[string]};
-lookup_function('not') ->
-    {'not', fun x_not/2, [boolean]};
+
+lookup_function('regex-match') ->
+    {'regex-match', fun 'regex-match'/2,[string,string]};
+lookup_function('regex-replace') ->
+    {'regex-replace', fun 'regex-replace'/2,[string,string,string]};
+lookup_function('regex-replace-list') ->
+    {'regex-replace-list', fun 'regex-replace-list'/2,[node_set,string,string]};
+
+lookup_function('split') ->
+    {'split', fun split/2,[string,string]};
+lookup_function('join') ->
+    {'join', fun join/2,[node_set,string]};
+lookup_function('take') ->
+    {'take', fun take/2,[node_set,number]};
+lookup_function('take-each') ->
+    {'take-each', fun 'take-each'/2,[node_set,number]};
+
 lookup_function('string') ->
     {'string', fun 'string'/2, [node_set]};
 lookup_function('string-list') ->
     {'string-list', fun 'string-list'/2, [node_set]};
+lookup_function('not') ->
+    {'not', fun x_not/2, [boolean]};
 lookup_function(_) ->
     false.
 
@@ -158,6 +177,13 @@ substring(_Ctx,[String,Start,Length]) when is_binary(String)->
             R
     end.
 
+%% @doc Function: string substring-list(node-set, number, number?)
+%%      The substring function returns the substring of the first argument
+%%      starting at the position specified in the second argument with length
+%%      specified in the third argument for every node in list
+'substring-list'(Ctx,[NodeList,Start,Length]) ->
+    lists:map(fun(Node) -> substring(Ctx,[Node,Start,Length]) end, NodeList).
+
 
 %% @doc Function: replace(binary, binary, binary)
 %%      Replaces needle in haystack with replace
@@ -184,6 +210,63 @@ sum(_Ctx,[Values]) ->
 %%            in the string, that isn't the same
 'string-length'(_Ctx,[String]) ->
     size(String).
+
+%% @doc Function: regex-match split(string, string, string)
+%%      Replace string content by regular expression
+'regex-match'(_Ctx,[<<>>,_Match]) -> [];
+'regex-match'(_Ctx,[String,Match]) ->
+    case re:run(String, Match, [global, {capture, all, binary}]) of
+        {match,Results} ->
+            Results;
+        nomatch ->
+            Results = []
+    end,
+    lists:flatten(Results).
+
+%% @doc Function: regex-replace split(string, string)
+%%      Replace contents of a string by regular expression
+'regex-replace'(_Ctx,[<<>>,_Match,_Replace]) -> <<>>;
+'regex-replace'(_Ctx,[String,Match,Replace]) ->
+    re:replace(String, Match, Replace, [global, {return, list}]).
+
+
+%% @doc Function: regex-replace-list split(string, string, string)
+%%      Replace string content by regular expression for every entry in list
+'regex-replace-list'(_Ctx,[[],_Match,_Replace]) -> [];
+'regex-replace-list'(Ctx,[NodeList,Match,Replace]) when is_list(NodeList) ->
+    lists:map(fun(Node) -> 'regex-replace'(Ctx,[Node,Match,Replace]) end, NodeList).
+
+%% @doc Function: node-set split(string, string)
+%%      Split a string into nodes
+split(_Ctx,[<<>>,_Separator]) -> [];
+split(_Ctx,[String,Separator]) ->
+    re:split(String, Separator, [{return, list}]).
+
+%% @doc Function: string join(node-set, string)
+%%      Split a string into nodes
+join(_Ctx,[NodeList,Glue]) ->
+    StringList = lists:map(fun(Node) -> binary_to_list(Node) end, NodeList),
+    list_to_binary(string:join(StringList,binary_to_list(Glue))).
+
+%% @doc Function: node-set take(node-set, number)
+%%      Split a string into nodes
+take(_Ctx,[NodeList,-1]) ->
+    ListSize = length(NodeList),
+    lists:nth(ListSize, NodeList);
+take(_Ctx,[NodeList,0]) ->
+    lists:nth(1, NodeList);
+take(_Ctx,[NodeList,Index]) ->
+    ListSize = length(NodeList),
+    case Index =< ListSize of
+        true ->
+            lists:nth(Index, NodeList);
+        false ->
+            <<>>
+    end.
+
+
+'take-each'(Ctx,[NodeList,Index]) ->
+    lists:map(fun(Node) -> take(Ctx,[Node,Index]) end, NodeList).
 
 %%  @doc Function: string string(node_set)
 %%
