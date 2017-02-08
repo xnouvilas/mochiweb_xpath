@@ -33,31 +33,34 @@ Xpath coverage
 
 ### Implemented axes
 
-* self
-* child
-* descendant-or-self
-* descendant
-* parent (only for elements, not `text()/parent::` or `attribute::*/parent::`)
-* following-sibling (same as parent)
-* preceding-sibling (same as parent)
 * attribute
- 
+* child
+* descendant
+* descendant-or-self
+* following-sibling (same as parent)
+* parent (only for elements, not `text()/parent::` or `attribute::*/parent::`)
+* preceding-sibling (same as parent)
+* self
+
 
 ### Implemented functions
 
-* last
-* position
-* count
 * concat
-* ends-with
-* name
-* starts-with
+* concat-list
 * contains
+* count
+* ends-with
+* last
+* name
+* not
+* position
+* translate
+* translate-list
+* starts-with
+* string-length
 * substring
 * sum
-* string-length
-* not
- 
+
 
 ### Implemented abbreviated syntax
 
