@@ -245,7 +245,8 @@ sum(_Ctx,[Values]) ->
 %%      Split a string into nodes
 split(_Ctx,[<<>>,_Separator]) -> [];
 split(_Ctx,[String,Separator]) ->
-    Pieces = string:tokens(binary_to_list(String), binary_to_list(Separator)),
+    PreparedString = re:replace(String, Separator, <<"¶">>, [global,{return,list}]),
+    Pieces = string:tokens(PreparedString, "¶"),
     lists:map(fun(Piece) -> list_to_binary(Piece) end, Pieces).
 
 %% @doc Function: string join(node-set, string)
