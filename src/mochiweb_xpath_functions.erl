@@ -69,6 +69,11 @@ lookup_function('take') ->
 lookup_function('take-each') ->
     {'take-each', fun 'take-each'/2,[node_set,number]};
 
+lookup_function('if-else') ->
+    {'if-else', fun 'if-else'/2,[string,string,string]};
+lookup_function('if-else-list') ->
+    {'if-else-list', fun 'if-else-list'/2,[string,node_set,node_set]};
+
 lookup_function('string') ->
     {'string', fun 'string'/2, [node_set]};
 lookup_function('string-list') ->
@@ -240,7 +245,9 @@ sum(_Ctx,[Values]) ->
 %%      Split a string into nodes
 split(_Ctx,[<<>>,_Separator]) -> [];
 split(_Ctx,[String,Separator]) ->
-    re:split(String, Separator, [{return, list}]).
+    PreparedString = re:replace(String, Separator, <<"¶">>, [global,{return,list}]),
+    Pieces = string:tokens(PreparedString, "¶"),
+    lists:map(fun(Piece) -> list_to_binary(Piece) end, Pieces).
 
 %% @doc Function: string join(node-set, string)
 %%      Split a string into nodes
@@ -265,8 +272,24 @@ take(_Ctx,[NodeList,Index]) ->
     end.
 
 
+%% @doc Function: node-set take(node-set, index)
+%%      Selects element index from lists inside a list
 'take-each'(Ctx,[NodeList,Index]) ->
     lists:map(fun(Node) -> take(Ctx,[Node,Index]) end, NodeList).
+
+%% @doc Function: node-set take(string, string, string)
+%%      Selects first or second choices depending on condition empty or not
+'if-else'(_Ctx,[<<>>,_First,Second]) ->
+    Second;
+'if-else'(_Ctx,[_Condition,First,_Second]) ->
+    First.
+
+%% @doc Function: node-set take(string, string, string)
+%%      Selects first or second list depending on condition empty or not
+'if-else-list'(_Ctx,[<<>>,_First,Second]) ->
+    Second;
+'if-else-list'(_Ctx,[_Condition,First,_Second]) ->
+    First.
 
 %%  @doc Function: string string(node_set)
 %%
