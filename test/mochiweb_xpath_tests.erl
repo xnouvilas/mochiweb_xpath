@@ -53,8 +53,6 @@ test_definitions() ->
                {"/html/head/title/text() | /html/body/h1/text()", [<<"Some Title!!">>, <<"Title">>]}, % not necessary in document order according to spec
                %% test "contains()"
                {"/html/body/div/img[contains(@src, 'broken')]/@src",[<<"some_broken_img_tag">>]},
-               %% test "between()"
-               {"between(count(//h1), 1, 3)", true},
                %% test "concat()"
                {"concat(//div[@id='last']/@class, 'txt1', 2)",<<"normaltxt12">>},
                %% test "concat-list()"
@@ -134,7 +132,22 @@ test_definitions() ->
                %% -- attribute --
                {"/html/body/form/input[1]/attribute::*", [<<"hidden">>, <<"id1">>, <<"Val1">>]},
                {"/html/body/form/input[1]/attribute::node()", [<<"hidden">>, <<"id1">>, <<"Val1">>]},
-               {"/html/body/form/input[1]/attribute::value", [<<"Val1">>]}
+               {"/html/body/form/input[1]/attribute::value", [<<"Val1">>]},
+               %% non standard xpath functions
+               %% test "between()"
+               {"between(count(//h1), 1, 3)", true},
+               %% test "split()"
+               {"split(/html/body/p/text(), ' ')", [<<"Some">>, <<"Other">>, <<"Text">>]},
+               %% test "join()"
+               {"join(/html/body/form/input/@value, ' | ')", <<"Val1 | Val2 | Val3 | Val4 | Val5 | Val6">>},
+               %% test "take()"
+               {"take(/html/body/form/input/@value, 2)", <<"Val2">>},
+               %% test "take-each()"
+               {"take-each(string-list(//ul), 2)", [[<<"list item2">>], [<<"ssd\n  ">>]]},
+               %% test "if-else()"
+               {"if-else(//h3, //h1/text(), //h2/text())", <<"sdsdsds">>},
+               %% test "if-else-list()"
+               {"if-else-list(//input[@name = 'non_existent'], //input[@name = 'non_existent']/@value, 'nil')", [<<"nil">>]}
               ]},
       {?HTML2,[
                {"/html/body/div[1]/a[3]/text()",[<<"ssddd">>]},

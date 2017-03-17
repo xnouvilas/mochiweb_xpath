@@ -98,6 +98,15 @@ Xpath coverage
 ### TODO:
 port `match_*` from xmerl_xpath for better axes support
 
-### Undocumented functions
+### Non standard XPath 1.0 functions
 
-* between
+* between -> between(node_set, integer, integer) return a boolean if number is between range
+* split -> split(node_set, string) return a list with split elements
+* join -> join(node_set, string) return a string joining node set with string separator
+* take -> take(node_set, integer) return a string by its position
+* take-each -> take-each(node_set, integer)
+
+### Non standard XPath 1.0 conditions
+
+* if-else
+* if-else-list
