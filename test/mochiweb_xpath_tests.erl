@@ -81,10 +81,10 @@ test_definitions() ->
                %% {"/html/body/processing-instruction()", [{pi,<<"php my_processing_instr() ">>}]},  % processing-instriction() not work on my R14B04, but fixed in bffc6b40 Xmerl 1.3
                {"/html/body/processing-instruction('php')", [{pi,<<"php my_processing_instr() ">>}]},  % processing-instriction()
                {"/html/body/processing-instruction('erl')", []},  % processing-instriction()
-               %% replace
-               {"replace(//h1/text(), '!!', '!')", <<"Some Title!">>},
-               %% replace list
-               {"replace-list(replace-list(//ul[1]/li/text(), 'list', 'List'), '2', '')",
+               %% translate
+               {"translate(//h1/text(), '!!', '!')", <<"Some Title!">>},
+               %% translate list
+               {"translate-list(translate-list(//ul[1]/li/text(), 'list', 'List'), '2', '')",
                  [<<"List item">>, <<"List item">>]},
                %% string
                {"string(//cite[2])", [<<"other stuff">>]},
