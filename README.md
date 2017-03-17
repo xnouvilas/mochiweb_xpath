@@ -97,3 +97,7 @@ Xpath coverage
 
 ### TODO:
 port `match_*` from xmerl_xpath for better axes support
+
+### Undocumented functions
+
+* between

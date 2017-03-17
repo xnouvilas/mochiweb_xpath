@@ -53,6 +53,8 @@ test_definitions() ->
                {"/html/head/title/text() | /html/body/h1/text()", [<<"Some Title!!">>, <<"Title">>]}, % not necessary in document order according to spec
                %% test "contains()"
                {"/html/body/div/img[contains(@src, 'broken')]/@src",[<<"some_broken_img_tag">>]},
+               %% test "between()"
+               {"between(count(//h1), 1, 3)", true},
                %% test "concat()"
                {"concat(//div[@id='last']/@class, 'txt1', 2)",<<"normaltxt12">>},
                %% test "concat-list()"
