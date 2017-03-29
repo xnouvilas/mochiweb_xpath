@@ -44,10 +44,10 @@ lookup_function('substring') ->
     {'substring', fun substring/2,[string,number,number]};
 lookup_function('substring-list') ->
     {'substring-list', fun 'substring-list'/2,[node_set,number,number]};
-lookup_function('translate') ->
-    {'translate', fun replace/2,[string,string,string]};
-lookup_function('translate-list') ->
-    {'translate-list', fun 'replace-list'/2,[node_set,string,string]};
+lookup_function('replace') ->
+    {'replace', fun replace/2,[string,string,string]};
+lookup_function('replace-list') ->
+    {'replace-list', fun 'replace-list'/2,[node_set,string,string]};
 lookup_function('sum') ->
     {'sum', fun sum/2,[node_set]};
 lookup_function('string-length') ->
@@ -247,8 +247,7 @@ split(_Ctx,[<<>>,_Separator]) -> [];
 split(_Ctx,[String,Separator]) ->
     PreparedString = re:replace(String, Separator, <<"¶">>, [global,{return,list}]),
     Pieces = string:tokens(PreparedString, "¶"),
-    PostString = lists:map(fun(Piece) -> list_to_binary(Piece) end, Pieces),
-    re:replace(PostString,<<195>>,<<195,182>>,[{return,binary}]).
+    lists:map(fun(Piece) -> list_to_binary(Piece) end, Pieces).
 
 %% @doc Function: string join(node-set, string)
 %%      Split a string into nodes
