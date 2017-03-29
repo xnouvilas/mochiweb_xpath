@@ -33,31 +33,34 @@ Xpath coverage
 
 ### Implemented axes
 
-* self
-* child
-* descendant-or-self
-* descendant
-* parent (only for elements, not `text()/parent::` or `attribute::*/parent::`)
-* following-sibling (same as parent)
-* preceding-sibling (same as parent)
 * attribute
- 
+* child
+* descendant
+* descendant-or-self
+* following-sibling (same as parent)
+* parent (only for elements, not `text()/parent::` or `attribute::*/parent::`)
+* preceding-sibling (same as parent)
+* self
+
 
 ### Implemented functions
 
-* last
-* position
-* count
 * concat
-* ends-with
-* name
-* starts-with
+* concat-list
 * contains
+* count
+* ends-with
+* last
+* name
+* not
+* position
+* translate
+* translate-list
+* starts-with
+* string-length
 * substring
 * sum
-* string-length
-* not
- 
+
 
 ### Implemented abbreviated syntax
 
@@ -94,3 +97,16 @@ Xpath coverage
 
 ### TODO:
 port `match_*` from xmerl_xpath for better axes support
+
+### Non standard XPath 1.0 functions
+
+* between -> between(node_set, integer, integer) return a boolean if number is between range
+* split -> split(node_set, string) return a list with split elements
+* join -> join(node_set, string) return a string joining node set with string separator
+* take -> take(node_set, integer) return a string by its position
+* take-each -> take-each(node_set, integer)
+
+### Non standard XPath 1.0 conditions
+
+* if-else
+* if-else-list
