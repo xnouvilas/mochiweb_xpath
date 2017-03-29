@@ -241,13 +241,14 @@ sum(_Ctx,[Values]) ->
 'regex-replace-list'(Ctx,[NodeList,Match,Replace]) when is_list(NodeList) ->
     lists:map(fun(Node) -> 'regex-replace'(Ctx,[Node,Match,Replace]) end, NodeList).
 
-%% @doc Function: node-set split(string, string)
+%% @doc Function: nodes-set split(string, string)
 %%      Split a string into nodes
 split(_Ctx,[<<>>,_Separator]) -> [];
 split(_Ctx,[String,Separator]) ->
     PreparedString = re:replace(String, Separator, <<"¶">>, [global,{return,list}]),
     Pieces = string:tokens(PreparedString, "¶"),
-    lists:map(fun(Piece) -> list_to_binary(Piece) end, Pieces).
+    PostString = lists:map(fun(Piece) -> list_to_binary(Piece) end, Pieces),
+    re:replace(PostString,<<195>>,<<195,182>>,[{return,binary}]).
 
 %% @doc Function: string join(node-set, string)
 %%      Split a string into nodes
