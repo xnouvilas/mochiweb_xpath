@@ -193,13 +193,13 @@ substring(_Ctx,[String,Start,Length]) when is_binary(String)->
 %% @doc Function: replace(binary, binary, binary)
 %%      Replaces needle in haystack with replace
 replace(_Ctx,[Haystack,Needle,Replace]) ->
-    binary:replace(Haystack,Needle,Replace).
+    binary:replace(Haystack,Needle,Replace,[global]).
 
 
 %% @doc Function: replace-list(NodeList, binary, binary)
 %%      Replace needle in haystack with replace for each entry in list
 'replace-list'(_Ctx, [NodeList,Needle,Replace]) ->
-    lists:map(fun(Haystack) -> binary:replace(Haystack,Needle,Replace) end, NodeList).
+    lists:map(fun(Haystack) -> binary:replace(Haystack,Needle,Replace,[global]) end, NodeList).
 
 
 %% @doc Function: number sum(node-set)
