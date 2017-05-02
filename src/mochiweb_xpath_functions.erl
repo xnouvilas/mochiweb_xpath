@@ -302,22 +302,26 @@ take(_Ctx,[NodeList,Index]) ->
 'string'(_Ctx, [NodeList]) ->
     lists:map(fun({_Elem, _Attr, Children,_Pos}) -> concat_child_text(Children, []) end, NodeList).
 
-concat_child_text([], Result) ->
-    list_to_binary(lists:reverse(Result));
+concat_child_text([], Results) ->
+    List = lists:map(fun(Result) -> remove_comments(Result) end, Results),
+    list_to_binary(lists:reverse(List));
 concat_child_text([{_,_,Children,_} | Rest], Result) ->
     concat_child_text(Rest, [concat_child_text(Children, []) | Result]);
 concat_child_text([X | Rest], Result) ->
     concat_child_text(Rest, [X | Result]).
 
-'string-list'(_Ctx, [NodeList]) ->
-    lists:map(fun({_Elem, _Attr, Children,_Pos}) -> list_child_text(Children, []) end, NodeList).
+remove_comments({comment, _Comment}) -> <<>>;
+remove_comments(String) -> String.
 
-list_child_text([], Result) ->
-    lists:reverse(Result);
-list_child_text([{_,_,Children,_} | Rest], Result) ->
-    list_child_text(Rest, [list_child_text(Children, []) | Result]);
-list_child_text([X | Rest], Result) ->
-    list_child_text(Rest, [X | Result]).
+'string-list'(Ctx, [NodeList]) ->
+    lists:map(fun(Node) -> string(Ctx, Node) end, NodeList).
+
+% list_child_text([], Result) ->
+%     lists:reverse(Result);
+% list_child_text([{_,_,Children,_} | Rest], Result) ->
+%     list_child_text(Rest, [list_child_text(Children, []) | Result]);
+% list_child_text([X | Rest], Result) ->
+%     list_child_text(Rest, [X | Result]).
 
 x_not(_Ctx, [Bool]) ->
     not Bool.
