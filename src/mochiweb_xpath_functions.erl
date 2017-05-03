@@ -313,8 +313,8 @@ concat_child_text([X | Rest], Result) ->
 remove_comments({comment, _Comment}) -> <<>>;
 remove_comments(String) -> String.
 
-'string-list'(Ctx, [NodeList]) ->
-    lists:map(fun(Node) -> list_child_text(Children, []) end, NodeList).
+'string-list'(_Ctx, [NodeList]) ->
+    lists:map(fun({_Elem, _Attr, Children,_Pos}) -> list_child_text(Children, []) end, NodeList).
 
 list_child_text([], Result) ->
     lists:reverse(Result);
