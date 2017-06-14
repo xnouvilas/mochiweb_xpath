@@ -262,8 +262,14 @@ split(_Ctx,[String,Separator]) ->
 %% @doc Function: string join(node-set, string)
 %%      Split a string into nodes
 join(_Ctx,[NodeList,Glue]) ->
-    StringList = lists:map(fun(Node) -> binary_to_list(Node) end, NodeList),
+    StringList = lists:map(fun(Node) -> binary_to_list(normalize(Node)) end, NodeList),
     list_to_binary(string:join(StringList,binary_to_list(Glue))).
+    
+normalize(Value) when is_binary(Value) ->
+  Value;
+normalize(Value) ->
+  [Head|_] = Value,
+  Head.
 
 %% @doc Function: node-set take(node-set, number)
 %%      Split a string into nodes
@@ -280,7 +286,6 @@ take(_Ctx,[NodeList,Index]) ->
         false ->
             <<>>
     end.
-
 
 %% @doc Function: node-set take(node-set, index)
 %%      Selects element index from lists inside a list
