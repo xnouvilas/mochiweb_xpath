@@ -55,6 +55,8 @@ lookup_function('string-length') ->
 
 lookup_function('regex-match') ->
     {'regex-match', fun 'regex-match'/2,[string,string]};
+lookup_function('regex-take') ->
+    {'regex-take', fun 'regex-take'/2,[string,string]};
 lookup_function('regex-replace') ->
     {'regex-replace', fun 'regex-replace'/2,[string,string,string]};
 lookup_function('regex-replace-list') ->
@@ -68,6 +70,8 @@ lookup_function('take') ->
     {'take', fun take/2,[node_set,number]};
 lookup_function('take-each') ->
     {'take-each', fun 'take-each'/2,[node_set,number]};
+lookup_function('take-rows') ->
+    {'take-rows', fun 'take-rows'/2,[node_set,number,number]};
 
 lookup_function('if-else') ->
     {'if-else', fun 'if-else'/2,[string,string,string]};
@@ -245,6 +249,18 @@ sum(_Ctx,[Values]) ->
     re:replace(String, Match, Replace, [global, {return, list}]).
 
 
+%% @doc Function: regex-take split(string, string)
+%%      Return first regex match
+'regex-take'(_Ctx,[<<>>,_Match]) -> <<>>;
+'regex-take'(_Ctx,[String,Match]) ->
+    case re:run(String,Match,[global,{capture,[1],binary}]) of
+      nomatch ->
+        <<>>;
+      {match, [[Result]]} ->
+        Result
+    end.
+
+
 %% @doc Function: regex-replace-list split(string, string, string)
 %%      Replace string content by regular expression for every entry in list
 'regex-replace-list'(_Ctx,[[],_Match,_Replace]) -> [];
@@ -264,7 +280,7 @@ split(_Ctx,[String,Separator]) ->
 join(_Ctx,[NodeList,Glue]) ->
     StringList = lists:map(fun(Node) -> binary_to_list(normalize(Node)) end, NodeList),
     list_to_binary(string:join(StringList,binary_to_list(Glue))).
-    
+
 normalize(Value) when is_binary(Value) ->
   Value;
 normalize(Value) ->
@@ -291,6 +307,11 @@ take(_Ctx,[NodeList,Index]) ->
 %%      Selects element index from lists inside a list
 'take-each'(Ctx,[NodeList,Index]) ->
     lists:map(fun(Node) -> take(Ctx,[Node,Index]) end, NodeList).
+
+%% @doc Function: node-set take(node-set, columns, rows)
+%%      Selects full rows in tables
+'take-rows'(_Ctx,[NodeList,Columns,Rows]) ->
+    lists:map(fun(Row) -> lists:sublist(NodeList,(Row*Columns - Columns),Row*Columns) end, lists:seq(1,Rows)).
 
 %% @doc Function: node-set take(string, string, string)
 %%      Selects first or second choices depending on condition empty or not
