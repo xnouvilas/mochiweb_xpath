@@ -66,6 +66,8 @@ lookup_function('split') ->
     {'split', fun split/2,[string,string]};
 lookup_function('join') ->
     {'join', fun join/2,[node_set,string]};
+lookup_function('join-each') ->
+    {'join-each', fun 'join-each'/2,[node_set,string]};
 lookup_function('take') ->
     {'take', fun take/2,[node_set,number]};
 lookup_function('take-each') ->
@@ -287,6 +289,22 @@ normalize(Value) ->
   [Head|_] = Value,
   Head.
 
+%% @doc Function: string join(node-set, string)
+%%      Split a string into nodes
+'join-each'(_Ctx,[NodeList,Glue]) ->
+  lists:map(fun(Node) ->
+    List = 'normalize-list'(Node),
+    StringList = lists:map(fun(Entry) -> binary_to_list(Entry) end, List),
+    list_to_binary(string:join(StringList,binary_to_list(Glue)))
+  end, NodeList).
+
+'normalize-list'({_Elem, _Attr, Elements,_Pos}) ->
+  lists:flatten(lists:map(fun(Element) -> 'normalize-list'(Element) end, Elements));
+'normalize-list'(Value) when is_binary(Value) ->
+  Value;
+'normalize-list'(Elements) ->
+  lists:map(fun(Element) -> 'normalize-list'(Element) end, Elements).
+
 %% @doc Function: node-set take(node-set, number)
 %%      Split a string into nodes
 take(_Ctx,[NodeList,-1]) ->
@@ -361,3 +379,4 @@ list_child_text([X | Rest], Result) ->
 
 x_not(_Ctx, [Bool]) ->
     not Bool.
+
