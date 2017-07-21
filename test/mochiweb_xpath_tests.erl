@@ -141,10 +141,12 @@ test_definitions() ->
                {"split(/html/body/p/text(), ' ')", [<<"Some">>, <<"Other">>, <<"Text">>]},
                %% test "join()"
                {"join(/html/body/form/input/@value, ' | ')", <<"Val1 | Val2 | Val3 | Val4 | Val5 | Val6">>},
+               %% test "join-each()"
+               {"join-each(//ul[2]/li, ' && ')", [<<"sss">>,<<"ssd a">>]},
                %% test "take()"
                {"take(/html/body/form/input/@value, 2)", <<"Val2">>},
                %% test "take-each()"
-               {"take-each(string-list(//ul), 2)", [[<<"list item2">>], [<<"ssd\n  ">>]]},
+               {"take-each(string-list(//ul), 2)", [[<<"list item2">>], [<<"ssd a">>]]},
                %% test "if-else()"
                {"if-else(//h3, //h1/text(), //h2/text())", <<"sdsdsds">>},
                %% test "if-else-list()"

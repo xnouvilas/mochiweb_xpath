@@ -293,17 +293,23 @@ normalize(Value) ->
 %%      Split a string into nodes
 'join-each'(_Ctx,[NodeList,Glue]) ->
   lists:map(fun(Node) ->
-    List = 'normalize-list'(Node),
+    List = normalize_list(Node),
     StringList = lists:map(fun(Entry) -> binary_to_list(Entry) end, List),
     list_to_binary(string:join(StringList,binary_to_list(Glue)))
   end, NodeList).
 
-'normalize-list'({_Elem, _Attr, Elements,_Pos}) ->
-  lists:flatten(lists:map(fun(Element) -> 'normalize-list'(Element) end, Elements));
-'normalize-list'(Value) when is_binary(Value) ->
-  Value;
-'normalize-list'(Elements) ->
-  lists:map(fun(Element) -> 'normalize-list'(Element) end, Elements).
+normalize_list({_Elem, _Attr, Elements,_Pos}) ->
+  lists:flatten(lists:map(fun(Element) -> normalize_list(Element) end, Elements));
+normalize_list(Value) when is_binary(Value) ->
+  clean(Value);
+normalize_list(Elements) ->
+  lists:map(fun(Element) -> normalize_list(Element) end, Elements).
+
+%% @doc Function: node-set clean(string)
+%%      Clean string removing html entities, line-breaks, etc.
+clean(Binary) ->
+  String = re:replace(Binary, "(^\\s+)|(\\s+$)", "", [global,{return,list}]),
+  list_to_binary(String).
 
 %% @doc Function: node-set take(node-set, number)
 %%      Split a string into nodes
@@ -371,7 +377,8 @@ remove_comments(String) -> String.
     lists:map(fun({_Elem, _Attr, Children,_Pos}) -> list_child_text(Children, []) end, NodeList).
 
 list_child_text([], Result) ->
-    lists:reverse(Result);
+    NodeList = lists:reverse(Result),
+    lists:map(fun(Node) -> normalize_list(Node) end, NodeList);
 list_child_text([{_,_,Children,_} | Rest], Result) ->
     list_child_text(Rest, [list_child_text(Children, []) | Result]);
 list_child_text([X | Rest], Result) ->
