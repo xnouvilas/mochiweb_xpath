@@ -73,6 +73,8 @@ lookup_function('take-each') ->
   {'take-each', fun 'take-each'/2,[node_set,number]};
 lookup_function('take-rows') ->
   {'take-rows', fun 'take-rows'/2,[node_set,number,number]};
+lookup_function('group') ->
+  {'group', fun 'group'/2,[node_set,number]};
 
 lookup_function('if-else') ->
   {'if-else', fun 'if-else'/2,[string,string,string]};
@@ -328,6 +330,24 @@ take(_Ctx,[NodeList,Index]) ->
 %%   Selects full rows in tables
 'take-rows'(_Ctx,[NodeList,Columns,Rows]) ->
   lists:map(fun(Row) -> lists:sublist(NodeList,(Row*Columns - Columns),Row*Columns) end, lists:seq(1,Rows)).
+
+%% @doc Function: node-set group(node-set, chunk)
+%%   Selects full rows in tables
+group(_Ctx,[NodeList,Chunk]) ->
+  LeaderLength = case length(NodeList) rem Chunk of
+    0 -> 0;
+    N -> Chunk - N
+  end,
+  Leader = lists:duplicate(LeaderLength,nil),
+  chunk(Leader ++ lists:reverse(NodeList),[],0,Chunk).
+
+chunk([],Acc,_,_) -> Acc;
+chunk([H|T],Acc,Pos,Max) when Pos==Max ->
+  chunk(T, [[H] | Acc],1,Max);
+chunk([H|T],[HAcc | TAcc],Pos,Max) ->
+  chunk(T,[[H | HAcc] | TAcc],Pos+1,Max);
+chunk([H|T],[],Pos,Max) ->
+  chunk(T,[[H]],Pos+1,Max).
 
 %% @doc Function: node-set take(string, string, string)
 %%   Selects first or second choices depending on condition empty or not

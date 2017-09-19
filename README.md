@@ -11,15 +11,15 @@ Build
 API
 ---
 
-    mochiweb_xpath:execute/2
+  mochiweb_xpath:execute/2
 	mochiweb_xpath:execute/3
-    mochiweb_xpath:compile_xpath/1
+  mochiweb_xpath:compile_xpath/1
 
 Usage
 -----
 
-    Tree = mochiweb_html:parse(<<"some html">>),
-    Results = mochiweb_xpath:execute("/some/xpath", Tree).
+  Tree = mochiweb_html:parse(<<"some html">>),
+  Results = mochiweb_xpath:execute("/some/xpath", Tree).
 
 Note
 ----
@@ -105,6 +105,7 @@ port `match_*` from xmerl_xpath for better axes support
 * join -> join(node_set, string) return a string joining node set with string separator
 * take -> take(node_set, integer) return a string by its position
 * take-each -> take-each(node_set, integer)
+* group -> group(node_set, integer)
 
 ### Non standard XPath 1.0 conditions
 

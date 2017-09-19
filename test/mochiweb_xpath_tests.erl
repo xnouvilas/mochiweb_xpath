@@ -145,6 +145,9 @@ test_definitions() ->
       {"take(/html/body/form/input/@value, 2)", <<"Val2">>},
       %% test "take-each()"
       {"take-each(string-list(//ul), 2)", [[<<"list item2">>], [<<"ssd a">>]]},
+      %% test "group()"
+      {"group(//input/@value, 2)", [[<<"Val1">>, <<"Val2">>], [<<"Val3">>, <<"Val4">>], [<<"Val5">>, <<"Val6">>]]},
+      {"group(//input/@value, 4)", [[<<"Val1">>, <<"Val2">>, <<"Val3">>, <<"Val4">>], [<<"Val5">>, <<"Val6">>, nil, nil]]},
       %% test "if-else()"
       {"if-else(//h3, //h1/text(), //h2/text())", <<"sdsdsds">>},
       %% test "if-else-list()"
