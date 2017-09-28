@@ -353,6 +353,8 @@ chunk([H|T],[],Pos,Max) ->
 %%   Selects first or second choices depending on condition empty or not
 'if-else'(_Ctx,[<<>>,_First,Second]) ->
   Second;
+'if-else'(_Ctx,[<<"false">>,_First,Second]) ->
+  Second;
 'if-else'(_Ctx,[_Condition,First,_Second]) ->
   First.
 

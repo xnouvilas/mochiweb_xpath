@@ -150,8 +150,11 @@ test_definitions() ->
       {"group(//input/@value, 4)", [[<<"Val1">>, <<"Val2">>, <<"Val3">>, <<"Val4">>], [<<"Val5">>, <<"Val6">>, nil, nil]]},
       %% test "if-else()"
       {"if-else(//h3, //h1/text(), //h2/text())", <<"sdsdsds">>},
+      {"if-else(string(//ul), 'true', 'false')", <<"true">>},
+      {"if-else(count(//ul) = 0, 'true', 'false')", <<"false">>},
+      {"if-else(count(//ul) > 0, 'true', 'false')", <<"true">>},
       %% test "if-else-list()"
-      {"if-else-list(//input[@name = 'non_existent'], //input[@name = 'non_existent']/@value, 'nil')", [<<"nil">>]}
+      {"if-else-list(//input[@type='non_existent'], //input[@name='non_existent']/@value, 'nil')", [<<"nil">>]}
     ]},
     {?HTML2, [
       {"/html/body/div[1]/a[3]/text()", [<<"ssddd">>]},
