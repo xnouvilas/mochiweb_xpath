@@ -19,6 +19,7 @@
 %% The engine is responsable of calling the function with
 %% the correct arguments, given the function signature.
 -spec lookup_function(atom()) -> mochiweb_xpath:xpath_fun_spec() | false.
+
 lookup_function('last') ->
   {'last',fun last/2,[]};
 lookup_function('position') ->
@@ -79,7 +80,7 @@ lookup_function('group') ->
 lookup_function('if-else') ->
   {'if-else', fun 'if-else'/2,[string,string,string]};
 lookup_function('if-else-list') ->
-  {'if-else-list', fun 'if-else-list'/2,[string,node_set,node_set]};
+  {'if-else-list', fun 'if-else-list'/2,[node_set,string,string]};
 
 lookup_function('string') ->
   {'string', fun 'string'/2, [node_set]};
@@ -93,7 +94,7 @@ lookup_function(_) ->
 %% @doc Function: int last()
 %%   The last function returns the context size of the current node
 last({ctx, _, _, _, _, Size} = _Ctx, []) ->
-    Size.
+  Size.
 
 %% @doc Function: number position()
 %%   The position function returns the position of the current node
@@ -362,8 +363,18 @@ chunk([H|T],[],Pos,Max) ->
 %%   Selects first or second list depending on condition empty or not
 'if-else-list'(_Ctx,[<<>>,_First,Second]) ->
   Second;
-'if-else-list'(_Ctx,[_Condition,First,_Second]) ->
-  First.
+'if-else-list'(Ctx,[NodeList,First,Second]) ->
+  lists:map(fun(Elem) ->
+    {_, _, Element, _} = Elem,
+    'if-else-list'(Ctx,[NodeList,First,Second,Element])
+  end, NodeList);
+'if-else-list'(_Ctx,[_NodeList,_First,Second,[]]) ->
+  Second;
+'if-else-list'(_Ctx,[_NodeList,<<"true">>,_Second,_Element]) ->
+  <<"true">>;
+'if-else-list'(_Ctx,[_NodeList,_First,_Second,Element]) ->
+  lists:nth(1, Element).
+
 
 %%  @doc Function: string string(node_set)
 %%    The sum function returns the string representation of the

@@ -94,11 +94,11 @@ test_definitions() ->
         [<<"one-two-three-(nested-[deeply-four-done]-done)-five">>, <<"other stuff">>]},
       %% == axes ==
       %% -- descendant --
-      {"count(/html/body/ul/descendant::*)", 4},
+      {"count(/html/body/ul/descendant::*)", 5},
       {"/html/body/div[@id='desc_or_self']/descendant::*",
         fun({Name, _Arttr, _Chld}) -> Name end, [<<"i">>, <<"p">>, <<"span">>, <<"b">>]},
       %% --descendant-or-self --
-      {"count(/html/body/ul/descendant-or-self::*)", 6},
+      {"count(/html/body/ul/descendant-or-self::*)", 7},
       {"/html/body/div[@id='desc_or_self']/descendant-or-self::*",
         fun({Name, _Arttr, _Chld}) -> Name end, [<<"div">>, <<"i">>, <<"p">>, <<"span">>, <<"b">>]},
       %% FIXME: Broken
@@ -140,7 +140,7 @@ test_definitions() ->
       %% test "join()"
       {"join(/html/body/form/input/@value, ' | ')", <<"Val1 | Val2 | Val3 | Val4 | Val5 | Val6">>},
       %% test "join-each()"
-      {"join-each(//ul[2]/li, ' && ')", [<<"sss">>,<<"ssd a">>]},
+      {"join-each(//ul[2]/li, ' && ')", [<<"sss">>, <<"ssd a">>]},
       %% test "take()"
       {"take(/html/body/form/input/@value, 2)", <<"Val2">>},
       %% test "take-each()"
@@ -154,12 +154,14 @@ test_definitions() ->
       {"if-else(count(//ul) = 0, 'true', 'false')", <<"false">>},
       {"if-else(count(//ul) > 0, 'true', 'false')", <<"true">>},
       %% test "if-else-list()"
-      {"if-else-list(//input[@type='non_existent'], //input[@name='non_existent']/@value, 'nil')", [<<"nil">>]}
+      {"if-else-list(//ul[1]/li, 'true', 'false')", [<<"true">>, <<"true">>, <<"false">>]},
+      {"if-else-list(//ul[1]/li, //ul[1]/li, 'false')", [<<"List item">>, <<"list item2">>, <<"false">>]},
+      {"if-else-list(//ul[1]/li, //ul[1]/li, '')", [<<"List item">>, <<"list item2">>, <<"">>]}
     ]},
     {?HTML2, [
       {"/html/body/div[1]/a[3]/text()", [<<"ssddd">>]},
       {"/html/body/form[1]/input[@type='hidden']/@value",
-        [<<"Val1">>,<<"Val2">>,<<"Val3">>]},
+        [<<"Val1">>, <<"Val2">>, <<"Val3">>]},
       {"/html/body/form[input[@name='id1_2']/@value='Val1_2']/@action",
         [<<"Action2">>]},
       {"//input[@name='id1_2']/@value", [<<"Val1_2">>]},
@@ -169,28 +171,28 @@ test_definitions() ->
       {"//form[.//input[@name='id1_2']]/@action", [<<"Action2">>]},
       {"//form[.//input/@name = 'id1']/@action", [<<"Action1">>]},
       {"//form[//input/@name ='id1']/@action",
-        [<<"Action1">>,<<"Action2">>]},
+        [<<"Action1">>, <<"Action2">>]},
       {"count(/html/body/form[count(input[@type='hidden']) = 4])", 1},
       {"name(/html/*)", <<"head">>},
       %% starts with
       {"/html/body/form[starts-with(@action,'Act')]/@action",
-        [<<"Action1">>,<<"Action2">>]},
+        [<<"Action1">>, <<"Action2">>]},
       %% ends with
       {"/html/body/div[ends-with(@id,'t')]/@id",
-        [<<"first">>,<<"last">>]},
+        [<<"first">>, <<"last">>]},
       {"//input[substring(@name,1,4) = 'id1_']/@value",
         [<<"Val1_2">>]},
       {"//div[sum(number)=23]/@id", [<<"sum">>]},
       {"//div[sum(number)>20]/@id", [<<"sum">>]},
       {"string-length(name(/html)) = 4", true},
       {"//a[my_fun(@href) > 0]/text()",
-        [<<"ssddd">>,<<"myURLValue">>]},
+        [<<"ssddd">>, <<"myURLValue">>]},
       {"/html/body/div[1]/a[1]",
-        [{<<"a">>,[{<<"href">>,<<"sss">>}],[<<"ssddd">>]}]},
+        [{<<"a">>,[{<<"href">>, <<"sss">>}],[<<"ssddd">>]}]},
       {"/html/body/div[1]/a[position() < 3]",
         [
-          {<<"a">>, [{<<"href">>,<<"sss">>}], [<<"ssddd">>]},
-          {<<"a">>, [{<<"href">>,<<"sssd">>}], [<<"sfgfe">>]}
+          {<<"a">>, [{<<"href">>, <<"sss">>}], [<<"ssddd">>]},
+          {<<"a">>, [{<<"href">>, <<"sssd">>}], [<<"sfgfe">>]}
         ]},
       %% XPath expressions in arithmetic operations
       {"sum(//div[@id='second']/div/number)", 23},

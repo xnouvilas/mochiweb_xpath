@@ -70,9 +70,9 @@
 -spec compile_xpath( string() ) -> compiled_xpath().
 compile_xpath(Expr) ->
     mochiweb_xpath_parser:compile_xpath(Expr).
-    
+
 %% @doc Execute the given XPath expression against the given document, using
-%% the default set of functions. 
+%% the default set of functions.
 %% @spec execute(XPath,Doc) -> Results
 %% @type XPath =  compiled_xpath() | string()
 %% @type Doc = node()
@@ -85,8 +85,8 @@ compile_xpath(Expr) ->
 execute(XPath,Root) ->
     execute(XPath,Root,[]).
 
-%% @doc Execute the given XPath expression against the given document, 
-%%      using the default set of functions plus the user-supplied ones. 
+%% @doc Execute the given XPath expression against the given document,
+%%      using the default set of functions plus the user-supplied ones.
 %%
 %% @see mochiweb_xpath_functions.erl to see how to write functions
 %%
@@ -101,29 +101,31 @@ execute(XPath,Root) ->
 %% @type ArgType = node_set | string | number | boolean
 %% @type Results = [node()] | binary() | boolean() | number()
 %% TODO: should pass the user-defined functions when compiling
-%%       the xpath expression (compile_xpath/1). Then the 
-%%       compiled expression would have all its functions 
+%%       the xpath expression (compile_xpath/1). Then the
+%%       compiled expression would have all its functions
 %%       resolved, and no function lookup would occur when
 %%       the expression is executed
--spec execute(XPath, Doc, Functions) -> Result
-                                            when
-      XPath :: string() | compiled_xpath(),
-      Doc :: html_node(),
-      Functions :: [xpath_fun_spec()],
-      Result :: xpath_return().
-execute(XPathString,Doc,Functions) when is_list(XPathString) ->
-    XPath = mochiweb_xpath_parser:compile_xpath(XPathString),
-    execute(XPath,Doc,Functions);
+-spec execute(XPath, Doc, Functions) -> Result when
+  XPath :: string() | compiled_xpath(),
+  Doc :: html_node(),
+  Functions :: [xpath_fun_spec()],
+  Result :: xpath_return().
 
-execute(XPath,Doc,Functions) ->    
-    R0 = {<<0>>,[],[Doc]},
-    %% TODO: set parent instead of positions list, or some lazy-positioning?
-    R1 = add_positions(R0),
-    Result = execute_expr(XPath,#ctx{ctx=[R1],
-                                     root=R1,
-                                     functions=Functions,
-                                     position=0}),
-    remove_positions(Result).
+execute(XPathString,Doc,Functions) when is_list(XPathString) ->
+  XPath = mochiweb_xpath_parser:compile_xpath(XPathString),
+  execute(XPath,Doc,Functions);
+
+execute(XPath,Doc,Functions) ->
+  R0 = {<<0>>,[],[Doc]},
+  %% TODO: set parent instead of positions list, or some lazy-positioning?
+  R1 = add_positions(R0),
+  Result = execute_expr(XPath,#ctx{
+    ctx=[R1],
+    root=R1,
+    functions=Functions,
+    position=0
+  }),
+  remove_positions(Result).
 
 %%
 %% XPath tree traversing, top-level XPath interpreter
@@ -131,91 +133,102 @@ execute(XPath,Doc,Functions) ->
 
 %% xmerl_xpath:match_expr/2
 execute_expr({path, Type, Arg}, S) ->
-    eval_path(Type, Arg, S);
+  eval_path(Type, Arg, S);
+
 execute_expr(PrimExpr, S) ->
-    eval_primary_expr(PrimExpr, S).
+  eval_primary_expr(PrimExpr, S).
 
 
 eval_path(union, {PathExpr1, PathExpr2}, C) ->
-    %% in XPath 1.0 union doesn't necessary must return nodes in document
-    %% order (but must in XPath 2.0)
-    S1 = execute_expr(PathExpr1, C),
-    S2 = execute_expr(PathExpr2, C),
-    ordsets:to_list(ordsets:union(ordsets:from_list(S1),
-                                  ordsets:from_list(S2)));
+  %% in XPath 1.0 union doesn't necessary must return nodes in document
+  %% order (but must in XPath 2.0)
+  S1 = execute_expr(PathExpr1, C),
+  S2 = execute_expr(PathExpr2, C),
+  ordsets:to_list(ordsets:union(ordsets:from_list(S1),ordsets:from_list(S2)));
+
 eval_path(abs, Path ,Ctx = #ctx{root=Root}) ->
-    do_path_expr(Path, Ctx#ctx{ctx=[Root]});
+  do_path_expr(Path, Ctx#ctx{ctx=[Root]});
+
 eval_path(rel, Path, Ctx) ->
-    do_path_expr(Path, Ctx);
+  do_path_expr(Path, Ctx);
+
 eval_path(filter, {_PathExpr, {pred, _Pred}}, _C) ->
-    erlang:error({not_implemented, "filter"}).      % Who needs them?
+  erlang:error({not_implemented, "filter"}). % Who needs them?
 
 
 eval_primary_expr({comp,Comp,A,B},Ctx) ->
-    %% for predicates
-    CompFun = comp_fun(Comp),
-    L = execute_expr(A,Ctx),
-    R = execute_expr(B,Ctx),
-    comp(CompFun,L,R);
+  %% for predicates
+  CompFun = comp_fun(Comp),
+  L = execute_expr(A,Ctx),
+  R = execute_expr(B,Ctx),
+  comp(CompFun,L,R);
+
 eval_primary_expr({arith, Op, Arg1, Arg2}, Ctx) ->
-    %% for predicates
-    L = execute_expr(Arg1,Ctx),
-    R = execute_expr(Arg2,Ctx),
-    arith(Op, L, R);
+  %% for predicates
+  L = execute_expr(Arg1,Ctx),
+  R = execute_expr(Arg2,Ctx),
+  arith(Op, L, R);
+
 eval_primary_expr({bool,Comp,A,B},Ctx) ->
-    CompFun = bool_fun(Comp),
-    L = execute_expr(A,Ctx),
-    R = execute_expr(B,Ctx),
-    comp(CompFun,L,R);
+  CompFun = bool_fun(Comp),
+  L = execute_expr(A,Ctx),
+  R = execute_expr(B,Ctx),
+  comp(CompFun,L,R);
+
 eval_primary_expr({literal,L},_Ctx) ->
-    [L];
+  [L];
+
 eval_primary_expr({number,N},_Ctx) ->
-    [N];
+  [N];
+
 eval_primary_expr({negative, A}, Ctx) ->
-    R = execute_expr(A, Ctx),
-    [-mochiweb_xpath_utils:number_value(R)];
+  R = execute_expr(A, Ctx),
+  [-mochiweb_xpath_utils:number_value(R)];
+
 eval_primary_expr({function_call, Fun, Args}, Ctx=#ctx{functions=Funs}) ->
-    %% TODO: refactor double-case
-    case mochiweb_xpath_functions:lookup_function(Fun) of
-        {Fun, F, FormalSignature} ->
-            call_xpath_function(F, Args, FormalSignature, Ctx);
+  %% TODO: refactor double-case
+  case mochiweb_xpath_functions:lookup_function(Fun) of
+    {Fun, F, FormalSignature} ->
+      call_xpath_function(F, Args, FormalSignature, Ctx);
+    false ->
+      case lists:keysearch(Fun,1,Funs) of
+        {value, {Fun, F, FormalSignature}} ->
+          call_xpath_function(F, Args, FormalSignature, Ctx);
         false ->
-            case lists:keysearch(Fun,1,Funs) of
-                {value, {Fun, F, FormalSignature}} ->
-                    call_xpath_function(F, Args, FormalSignature, Ctx);
-                false ->
-                    throw({efun_not_found, Fun})
-            end
-    end.
+          throw({efun_not_found, Fun})
+      end
+  end.
 
 
 call_xpath_function(F, Args, FormalSignature, Ctx) ->
-    TypedArgs = prepare_xpath_function_args(Args, FormalSignature, Ctx),
-    F(Ctx, TypedArgs).
+  TypedArgs = prepare_xpath_function_args(Args, FormalSignature, Ctx),
+  F(Ctx, TypedArgs).
 
 %% execute function args expressions and convert them using formal
 %% signatures
 prepare_xpath_function_args(Args, Specs, Ctx) ->
-    RealArgs = [execute_expr(Arg, Ctx) || Arg <- Args],
-    convert_xpath_function_args(RealArgs, Specs, []).
+  RealArgs = [execute_expr(Arg, Ctx) || Arg <- Args],
+  convert_xpath_function_args(RealArgs, Specs, []).
 
 convert_xpath_function_args([], [], Acc) ->
-    lists:reverse(Acc);
-convert_xpath_function_args(Args, [{'*', Spec}], Acc) ->
-    NewArgs = [mochiweb_xpath_utils:convert(Arg,Spec) || Arg <- Args],
-    lists:reverse(Acc) ++ NewArgs;
-convert_xpath_function_args([Arg | Args], [Spec | Specs], Acc) ->
-    NewAcc = [mochiweb_xpath_utils:convert(Arg,Spec) | Acc],
-    convert_xpath_function_args(Args, Specs, NewAcc).
+  lists:reverse(Acc);
 
+convert_xpath_function_args(Args, [{'*', Spec}], Acc) ->
+  NewArgs = [mochiweb_xpath_utils:convert(Arg,Spec) || Arg <- Args],
+  lists:reverse(Acc) ++ NewArgs;
+
+convert_xpath_function_args([Arg | Args], [Spec | Specs], Acc) ->
+  NewAcc = [mochiweb_xpath_utils:convert(Arg,Spec) | Acc],
+  convert_xpath_function_args(Args, Specs, NewAcc).
 
 
 do_path_expr({step,{Axis,NodeTest,Predicates}}=_S,Ctx=#ctx{}) ->
-    NewNodeList = axis(Axis, NodeTest, Ctx),
-    apply_predicates(Predicates,NewNodeList,Ctx);
+  NewNodeList = axis(Axis, NodeTest, Ctx),
+  apply_predicates(Predicates,NewNodeList,Ctx);
+
 do_path_expr({refine,Step1,Step2},Ctx) ->
-    S1 = do_path_expr(Step1,Ctx),
-    do_path_expr(Step2,Ctx#ctx{ctx=S1}).
+  S1 = do_path_expr(Step1,Ctx),
+  do_path_expr(Step2,Ctx#ctx{ctx=S1}).
 
 
 %%
@@ -224,42 +237,42 @@ do_path_expr({refine,Step1,Step2},Ctx) ->
 %% TODO: port all axes to use test_node/3
 
 axis('self', NodeTest, #ctx{ctx=Context}) ->
-    [N || N <- Context, test_node(NodeTest, N, Context)];
+  [N || N <- Context, test_node(NodeTest, N, Context)];
+
 axis('descendant', NodeTest, #ctx{ctx=Context}) ->
-    [N || {_,_,Children,_} <- Context,
-          N <- descendant_or_self(Children, NodeTest, [], Context)];
+  [N || {_,_,Children,_} <- Context, N <- descendant_or_self(Children, NodeTest, [], Context)];
+
 axis('descendant_or_self', NodeTest, #ctx{ctx=Context}) ->
-    descendant_or_self(Context, NodeTest, [], Context);
+  descendant_or_self(Context, NodeTest, [], Context);
+
 axis('child', NodeTest, #ctx{ctx=Context}) ->
-    %% Flat list of all child nodes of Context that pass NodeTest
-    [N || {_,_,Children,_} <- Context,
-          N <- Children,
-          test_node(NodeTest, N, Context)];
+  %% Flat list of all child nodes of Context that pass NodeTest
+  [N || {_,_,Children,_} <- Context, N <- Children, test_node(NodeTest, N, Context)];
+
 axis('parent', NodeTest, #ctx{root=Root, ctx=Context}) ->
-    L = lists:foldl(
-          fun({_,_,_,Position}, Acc) ->
-                  ParentPosition = get_parent_position(Position),
-                  ParentNode = get_node_at(Root, ParentPosition),
-                  maybe_add_node(ParentNode, NodeTest, Acc, Context);
-             (Smth, _Acc) ->
-                  erlang:error({not_implemented, "parent for non-nodes", Smth})
-        end, [], Context),
-    ordsets:to_list(ordsets:from_list(lists:reverse(L)));
+  L = lists:foldl(
+    fun({_,_,_,Position}, Acc) ->
+      ParentPosition = get_parent_position(Position),
+      ParentNode = get_node_at(Root, ParentPosition),
+      maybe_add_node(ParentNode, NodeTest, Acc, Context);
+      (Smth, _Acc) -> erlang:error({not_implemented, "parent for non-nodes", Smth})
+    end, [], Context),
+    ordsets:to_list(ordsets:from_list(lists:reverse(L))
+  );
+
 axis('ancestor', _Test, _Ctx) ->
-    erlang:error({not_implemented, "ancestor axis"});
+  erlang:error({not_implemented, "ancestor axis"});
 
 axis('following_sibling', NodeTest, #ctx{root=Root, ctx=Context}) ->
-    %% TODO: alerts for non-elements (like for `text()/parent::`)
-    [N || {_,_,_,Position} <- Context,
-          N <- begin
-                   ParentPosition = get_parent_position(Position),
-                   MyPosition = get_position_in_parent(Position),
-                   {_,_,Children,_} = get_node_at(Root, ParentPosition),
-                   lists:sublist(Children,
-                                 MyPosition + 1,
-                                 length(Children) - MyPosition)
-               end,
-          test_node(NodeTest, N, Context)];
+  %% TODO: alerts for non-elements (like for `text()/parent::`)
+  [N || {_,_,_,Position} <- Context, N <- begin
+    ParentPosition = get_parent_position(Position),
+    MyPosition = get_position_in_parent(Position),
+    {_,_,Children,_} = get_node_at(Root, ParentPosition),
+    lists:sublist(Children, MyPosition + 1, length(Children) - MyPosition)
+  end,
+  test_node(NodeTest, N, Context)];
+
 axis('preceding_sibling', NodeTest, #ctx{root=Root, ctx=Context}) ->
     %% TODO: alerts for non-elements (like for `text()/parent::`)
     [N || {_,_,_,Position} <- Context,
@@ -376,7 +389,7 @@ maybe_add_node(Node, NodeTest, Acc, Ctx) ->
 %%
 apply_predicates(Predicates,NodeList,Ctx) ->
     lists:foldl(fun({pred, Pred} ,Nodes) ->
-                 apply_predicate(Pred,Nodes,Ctx) 
+                 apply_predicate(Pred,Nodes,Ctx)
                 end, NodeList,Predicates).
 
 % special case: indexing
@@ -407,11 +420,11 @@ handle_predicate_result(PredicateResult, _) ->
 %% Compare functions
 %%
 
-%% @see http://www.w3.org/TR/1999/REC-xpath-19991116 , section 3.4 
+%% @see http://www.w3.org/TR/1999/REC-xpath-19991116 , section 3.4
 comp(CompFun,L,R) when is_list(L), is_list(R) ->
     lists:any(fun(LeftValue) ->
                      lists:any(fun(RightValue)->
-                                 CompFun(LeftValue,RightValue) 
+                                 CompFun(LeftValue,RightValue)
                                end, R)
               end, L);
 comp(CompFun,L,R) when is_list(L) ->
@@ -422,8 +435,8 @@ comp(CompFun,L,R) ->
     CompFun(L,R).
 
 -spec comp_fun(atom()) -> fun((indexed_xpath_return(), indexed_xpath_return()) -> boolean()).
-comp_fun('=') -> 
-    fun 
+comp_fun('=') ->
+    fun
         (A,B) when is_number(A) -> A == mochiweb_xpath_utils:number_value(B);
         (A,B) when is_number(B) -> mochiweb_xpath_utils:number_value(A) == B;
         (A,B) when is_boolean(A) -> A == mochiweb_xpath_utils:boolean_value(B);
@@ -433,24 +446,24 @@ comp_fun('=') ->
 
 comp_fun('!=') ->
     fun(A,B) -> F = comp_fun('='),
-                not F(A,B) 
+                not F(A,B)
     end;
 
 comp_fun('>') ->
-  fun(A,B) -> 
-    mochiweb_xpath_utils:number_value(A) > mochiweb_xpath_utils:number_value(B) 
+  fun(A,B) ->
+    mochiweb_xpath_utils:number_value(A) > mochiweb_xpath_utils:number_value(B)
   end;
 comp_fun('<') ->
-  fun(A,B) -> 
+  fun(A,B) ->
     mochiweb_xpath_utils:number_value(A) < mochiweb_xpath_utils:number_value(B)
    end;
 comp_fun('<=') ->
-  fun(A,B) -> 
-    mochiweb_xpath_utils:number_value(A) =< mochiweb_xpath_utils:number_value(B) 
+  fun(A,B) ->
+    mochiweb_xpath_utils:number_value(A) =< mochiweb_xpath_utils:number_value(B)
   end;
 comp_fun('>=') ->
-  fun(A,B) -> 
-    mochiweb_xpath_utils:number_value(A) >= mochiweb_xpath_utils:number_value(B) 
+  fun(A,B) ->
+    mochiweb_xpath_utils:number_value(A) >= mochiweb_xpath_utils:number_value(B)
   end.
 
 %%
