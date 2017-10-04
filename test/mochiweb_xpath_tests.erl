@@ -156,7 +156,8 @@ test_definitions() ->
       %% test "if-else-list()"
       {"if-else-list(//ul[1]/li, 'true', 'false')", [<<"true">>, <<"true">>, <<"false">>]},
       {"if-else-list(//ul[1]/li, //ul[1]/li, 'false')", [<<"List item">>, <<"list item2">>, <<"false">>]},
-      {"if-else-list(//ul[1]/li, //ul[1]/li, '')", [<<"List item">>, <<"list item2">>, <<"">>]}
+      {"if-else-list(//ul[1]/li, //ul[1]/li, '')", [<<"List item">>, <<"list item2">>, <<"">>]},
+      {"if-else-list(//ul[1]/li, '', '-')", [<<"List item">>, <<"list item2">>, <<"-">>]}
     ]},
     {?HTML2, [
       {"/html/body/div[1]/a[3]/text()", [<<"ssddd">>]},

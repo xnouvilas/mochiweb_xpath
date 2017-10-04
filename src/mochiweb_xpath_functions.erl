@@ -350,7 +350,7 @@ chunk([H|T],[HAcc | TAcc],Pos,Max) ->
 chunk([H|T],[],Pos,Max) ->
   chunk(T,[[H]],Pos+1,Max).
 
-%% @doc Function: node-set take(string, string, string)
+%% @doc Function: node-set if-else(string, string, string)
 %%   Selects first or second choices depending on condition empty or not
 'if-else'(_Ctx,[<<>>,_First,Second]) ->
   Second;
@@ -359,7 +359,7 @@ chunk([H|T],[],Pos,Max) ->
 'if-else'(_Ctx,[_Condition,First,_Second]) ->
   First.
 
-%% @doc Function: node-set take(string, string, string)
+%% @doc Function: node-set if-else(node_set, string, string)
 %%   Selects first or second list depending on condition empty or not
 'if-else-list'(_Ctx,[<<>>,_First,Second]) ->
   Second;
